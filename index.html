@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.node {
+  cursor: pointer;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font: 10px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+
+</style>
+<body>
+<textarea id="formula" value="" name="formula" rows="4" cols="40"></textarea>
+<a href="javascript:void('0');" onclick="openURL()">計算</a><br>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="coin.js" charset="utf-8"></script>
+</body>
+</html>
