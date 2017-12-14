@@ -67,9 +67,7 @@ function main(){
       }               
       let answer = eval(formula_string);
       console.log(answer);
-      // console.log(res1);
-      // var JPY_XEM = res1.BTC_XEM.last * res2.JPY.last;
-      // console.log(JPY_XEM);
+      console.log($('#answer')[0].value = Math.round(answer));
     })
     .fail(function(xhr, textStatus, errorThrown) {
         alert("時価の取得に失敗しました。");
