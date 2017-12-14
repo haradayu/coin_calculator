@@ -12,7 +12,7 @@ function get_url_vars(){
 function openURL() { 
   let textarea = document.getElementById('formula');
   let formula_string = textarea.value;
-  const base_url = "http://localhost:11411/index.html?formula=";
+  const base_url = "https://haradayu.github.io/coin_calculator/index.html?formula=";
   formula_string = escape(formula_string);
   const url = base_url + formula_string;
   location.href = url; 
