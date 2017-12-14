@@ -1,12 +1,5 @@
-function ajax(url) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, true); // true:非同期、false:同期
-    xmlHttp.send(null);
-    return xmlHttp.responseText;
-}
 
-function get_url_vars()
-{
+function get_url_vars(){
   let vars = new Object, params;
   let temp_params = window.location.search.substring(1).split('&');
   for(var i = 0; i <temp_params.length; i++) {
@@ -16,9 +9,7 @@ function get_url_vars()
   return vars;
 }
 
-
-function openURL() 
-{ 
+function openURL() { 
   let textarea = document.getElementById('formula');
   let formula_string = textarea.value;
   const base_url = "http://localhost:11411/index.html?formula=";
@@ -27,42 +18,62 @@ function openURL()
   location.href = url; 
 }
 
+
 function get_json(url){
+  let return_data;
   $.ajax({
     url: url,
     type: "get",
+    async: false,
   }).done(function (data, textStatus, jqXHR) {
-    console.log(data); // => "OK"
+    return_data = data;
   }).fail(function (jqXHR, textStatus, errorThrown) {
     console.log(errorThrown); // => Error Message
   });
+  return return_data;
 }
 
-function main()
-{
+function main(){
   let parameter_dict = get_url_vars();
   if ("formula" in parameter_dict)
   {
-    btc_per_altcoin_pair ={'eth': 'eth_btc','xrp': 'xrp_btc','bch': 'bch_btc','ltc': 'ltc_btc','dash': 'dash_btc',
-                            'xem': 'xem_btc','xmr': 'xmr_btc','etc': 'etc_btc','lsk': 'lsk_btc','zec': 'zec_btc',
-                            'rep': 'rep_btc','fct': 'fct_btc'};
-    fiat_per_btc_dict = {"jpy":1879733.99}
     let formula_string = decodeURI(parameter_dict["formula"]);
     let textarea = document.getElementById('formula');
     textarea.value = formula_string;
-    for(key in btc_per_altcoin_pair){
-      let regexp = new RegExp(key,"gi");
-      if (regexp.test(formula_string)){
-
-        console.log(btc_per_altcoin_pair[key]);
+    $.when(
+        get_json("https://poloniex.com/public?command=returnTicker"),
+        get_json("https://public.bitbank.cc/mona_btc/ticker"),
+        get_json("https://public.bitbank.cc/btc_jpy/ticker")
+    )
+    .done(function(poloniex, mona_btc, btc_jpy) {
+      console.log($.parseJSON(mona_btc));
+      mona_btc = $.parseJSON(mona_btc)["data"];
+      btc_jpy = $.parseJSON(btc_jpy)["data"];
+      let btc_per_fiat = btc_jpy["last"] - 0;
+      for(key in poloniex){
+        if(/BTC_/.test(key)){
+          let altcoin = key.replace("BTC_",""),
+              regexp = new RegExp(altcoin,"gi");
+          if (regexp.test(formula_string)){
+            formula_string = formula_string.replace(regexp,"*" + (poloniex[key]["last"] * btc_per_fiat));
+          }         
+        }
       }
-    }  
-    ajax("http://bittrex.com/api/v1.1/public/getticker?market=BTC-LTC");
-    // getURL("https://bittrex.com/api/v1.1/public/getticker?market=BTC-LTC",function(c,t){alert(c)});
-    // get_json("https://bittrex.com/api/v1.1/public/getticker?market=BTC-LTC");
-    formula_string = formula_string.replace(/btc/ig,"*"+fiat_per_btc_dict["jpy"]);
-    let answer = eval(formula_string);
-    console.log(answer);
+      if (/mona/ig.test(formula_string)){
+        formula_string = formula_string.replace(/mona/ig,"*" + (mona_btc["last"] * btc_per_fiat));
+      }
+      if (/btc/ig.test(formula_string)){
+        formula_string = formula_string.replace(/btc/ig,"*" + (btc_per_fiat));
+      }               
+      let answer = eval(formula_string);
+      console.log(answer);
+      // console.log(res1);
+      // var JPY_XEM = res1.BTC_XEM.last * res2.JPY.last;
+      // console.log(JPY_XEM);
+    })
+    .fail(function(xhr, textStatus, errorThrown) {
+        alert("時価の取得に失敗しました。");
+    });
 
   }
 
