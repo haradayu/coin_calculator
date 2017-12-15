@@ -12,9 +12,10 @@ function get_url_vars(){
 function openURL() { 
   let textarea = document.getElementById('formula');
   let formula_string = textarea.value;
-  const base_url = "https://haradayu.github.io/coin_calculator/index.html?formula=";
+  let self_url = location.href;
+  const base_url = self_url + "?formula=";
   formula_string = escape(formula_string);
-  const url = base_url + formula_string;
+  let url = base_url + formula_string;
   location.href = url; 
 }
 
@@ -43,9 +44,10 @@ function main(){
     $.when(
         get_json("https://poloniex.com/public?command=returnTicker"),
         get_json("https://public.bitbank.cc/mona_btc/ticker"),
+        get_json("https://c-cex.com/t/zny-btc.json"),
         get_json("https://public.bitbank.cc/btc_jpy/ticker")
     )
-    .done(function(poloniex, mona_btc, btc_jpy) {
+    .done(function(poloniex, mona_btc, zny_btc, btc_jpy) {
       console.log($.parseJSON(mona_btc));
       mona_btc = $.parseJSON(mona_btc)["data"];
       btc_jpy = $.parseJSON(btc_jpy)["data"];
@@ -61,6 +63,9 @@ function main(){
       }
       if (/mona/ig.test(formula_string)){
         formula_string = formula_string.replace(/mona/ig,"*" + (mona_btc["last"] * btc_per_fiat));
+      }
+      if (/zny/ig.test(formula_string)){
+        formula_string = formula_string.replace(/mona/ig,"*" + (zny_btc["ticker"]["lastbuy"] * btc_per_fiat));
       }
       if (/btc/ig.test(formula_string)){
         formula_string = formula_string.replace(/btc/ig,"*" + (btc_per_fiat));
